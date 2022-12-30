@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: "Inter";
+    font-weight: 400 900;
+    src: url("../public/fonts/Inter-Variable.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 400 900;
+    src: url("../public/fonts/Inter-ItalicVariable.woff2") format("woff2");
+}
+
+body,
+html {
+    @apply m-0 p-0;
+}

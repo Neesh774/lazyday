@@ -1,0 +1,28 @@
+{
+  "name": "yr-in-review",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --ignore-path ./.prettierignore --write ."
+  },
+  "dependencies": {
+    "eslint": "8.29.0",
+    "eslint-config-next": "13.0.6",
+    "next": "13.0.6",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.3",
+    "@tailwindcss/typography": "^0.5.8",
+    "autoprefixer": "^10.4.13",
+    "postcss": "^8.4.19",
+    "prettier": "^2.8.0",
+    "sass": "^1.56.1",
+    "tailwindcss": "^3.2.4"
+  }
+}
