@@ -1,86 +1,89 @@
-import { Reorder } from "framer-motion";
+import Event from "../components/Event";
 import { useState, useEffect } from "react";
-
-function Item({ content }) {
-    return (
-        <div className="border-b prose prose-xl">
-            <p>{content}</p>
-        </div>
-    );
-}
+import {
+    VerticalTimeline,
+    VerticalTimelineElement
+} from "react-vertical-timeline-component";
+import "react-vertical-timeline-component/style.min.css";
+import Creatable, { useCreatable } from "react-select/creatable";
+import dayjs from "dayjs";
+import toast from "react-hot-toast";
 
 export default function Index() {
-    const [today, setToday] = useState({
-        day: "",
-        weekday: "",
-        current: {
-            hours: "",
-            minutes: ""
-        }
-    });
-
-    // TODO: Store in localStorage?
-    const [items, setItems] = useState([0, 1, 2, 3]);
-    const [intervals, setIntervals] = useState([]);
-
-    useEffect(() => {
-        const dates = {
-            0: "Sun",
-            1: "Mon",
-            2: "Tue",
-            3: "Wed",
-            4: "Thu",
-            5: "Fri",
-            6: "Sat"
-        };
-        const date = new Date();
-        setToday({
-            weekday: dates[date.getDay()],
-            day: date.getDate(),
-            current: {
-                hours: date.getHours(),
-                minutes: date.getMinutes()
-            }
-        });
-
-        let intervals = [];
-        for (let i = today.current.hours; i <= 24; i++) {
-            intervals.push(i);
-        }
-        setIntervals(intervals);
-    }, [today]);
+    const [events, setEvents] = useState([]);
+    const intervals = [];
+    const start = dayjs();
+    for (
+        let i = dayjs()
+            .set("seconds", 0)
+            .set("minute", Math.round(start.get("minutes") / 5) * 5);
+        i < dayjs().add(12, "h");
+        i = i.add(5, "minutes")
+    ) {
+        intervals.push({ value: i, label: i.format("hh:mm A").toString() });
+    }
 
     return (
-        <div className="font-body overflow-x-hidden w-screen">
-            <div className="p-14 w-full">
-                <div className="flex gap-x-4">
-                    <div className="flex flex-col w-fit items-center prose prose-xl">
-                        <h4 className="mb-0 text-blue-500">{today.weekday}</h4>
-                        <h3 className="bg-blue-500 text-white rounded-full w-fit !w-[50px] h-[50px] flex items-center justify-center">
-                            <span>{today.day}</span>
-                        </h3>
+        <div className="bg-slate-100 min-h-screen font-body">
+            <div className="p-7">
+                <div className="flex gap-x-4 items-center">
+                    <div className="flex flex-col items-center justify-center prose prose-slate prose-xl">
+                        <h2 className="text-blue-300 mb-0">
+                            {
+                                [
+                                    "Sun",
+                                    "Mon",
+                                    "Tue",
+                                    "Wed",
+                                    "Thu",
+                                    "Fri",
+                                    "Sat"
+                                ][new Date().getDay()]
+                            }
+                        </h2>
+                        <h1 className="text-blue-500">
+                            {new Date().getDate()}
+                        </h1>
                     </div>
-                    <button className=""
+                    <Event
+                        event={events}
+                        setEvent={info =>
+                            setEvents(
+                                [...events, info].sort(
+                                    (a, b) =>
+                                        a.startTime.value > b.startTime.value
+                                )
+                            )
+                        }
+                        intervals={intervals}
+                    />
                 </div>
-                <div className="relative flex py-7 w-full">
-                    <div>
-                        {intervals.map(i => (
-                            <div className="-z-1 w-full" key={i}>
-                                <div className="w-full !flex gap-x-2 min-h-[50px] justify-center prose items-center max-w-none">
-                                    <h3 className="text-slate-500 m-0">
-                                        {i}:00
-                                    </h3>
-                                    <div className="bg-slate-300 w-screen h-[1px] self-center" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex flex-col z-50 max-w-none absolute left-20 top-14">
-                        <div className="bg-sky-500 prose text-white max-w-none h-[100px] p-3 rounded-md">
-                            <p>Watch a movie</p>
-                        </div>
-                    </div>
-                </div>
+                <VerticalTimeline>
+                    <style jsx>{`
+                        .vertical-timeline-element-content {
+                            box-shadow: none !important;
+                        }
+
+                        p {
+                            margin-top: 0 !important;
+                        }
+                    `}</style>
+                    {events.map((event, key) => {
+                        console.log(event);
+                        return (
+                            <VerticalTimelineElement
+                                key={key}
+                                className="vertical-timeline-element"
+                                iconStyle={{ backgroundColor: "#3b82f6" }}>
+                                <h3>
+                                    {event.startTime.label} -{" "}
+                                    {event.endTime.label}
+                                </h3>
+                                <p>{event.description}</p>
+                            </VerticalTimelineElement>
+                        );
+                    })}
+                </VerticalTimeline>
             </div>
         </div>
     );
