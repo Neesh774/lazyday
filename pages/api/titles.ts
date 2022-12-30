@@ -2,7 +2,7 @@ import { NextApiHandler } from "next";
 import { allTypes } from "../../utils/types";
 
 const handler: NextApiHandler = async (req, res) => {
-  if (!allTypes.includes(req.body.type)) {
+  if (!req.query.type || !allTypes.includes(req.query.type as string)) {
     res.status(400).json({ error: "Invalid type" });
     return;
   }
@@ -16,9 +16,11 @@ const handler: NextApiHandler = async (req, res) => {
     }
   };
 
-  const url = `https://${host}/titles?titleType=${req.body.type}&list=most_pop_movies&sort=year.decr&year=2022`;
+  const url = `https://${host}/titles?titleType=${req.query.type}&list=most_pop_movies&sort=year.decr&year=2022`;
 
   const response = await fetch(url, options as any).then((res) => res.json());
 
   res.status(200).json(response);
 }
+
+export default handler;

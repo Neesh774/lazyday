@@ -1,13 +1,7 @@
 import { Reorder } from "framer-motion";
+import Event from "../components/Event";
 import { useState, useEffect } from "react";
-
-function Item({ content }) {
-    return (
-        <div className="border-b prose prose-xl">
-            <p>{content}</p>
-        </div>
-    );
-}
+import { Plus } from "lucide-react";
 
 export default function Index() {
     const [today, setToday] = useState({
@@ -20,8 +14,12 @@ export default function Index() {
     });
 
     // TODO: Store in localStorage?
-    const [items, setItems] = useState([0, 1, 2, 3]);
-    const [intervals, setIntervals] = useState([]);
+    const [events, setEvents] = useState([
+        {
+            type: "movie",
+            description: "The Matrix"
+        }
+    ]);
 
     useEffect(() => {
         const dates = {
@@ -42,45 +40,52 @@ export default function Index() {
                 minutes: date.getMinutes()
             }
         });
-
-        let intervals = [];
-        for (let i = today.current.hours; i <= 24; i++) {
-            intervals.push(i);
-        }
-        setIntervals(intervals);
     }, [today]);
 
     return (
-        <div className="font-body overflow-x-hidden w-screen">
-            <div className="p-14 w-full">
-                <div className="flex gap-x-4">
+        <div className="font-body">
+            <div className="p-14 w-full flex flex-col gap-4">
+                <div className="items-center flex gap-x-4">
                     <div className="flex flex-col w-fit items-center prose prose-xl">
                         <h4 className="mb-0 text-blue-500">{today.weekday}</h4>
-                        <h3 className="bg-blue-500 text-white rounded-full w-fit !w-[50px] h-[50px] flex items-center justify-center">
-                            <span>{today.day}</span>
-                        </h3>
+                        <h3 className="text-blue-500">{today.day}</h3>
                     </div>
-                    <button className=""
-                </div>
-                <div className="relative flex py-7 w-full">
-                    <div>
-                        {intervals.map(i => (
-                            <div className="-z-1 w-full" key={i}>
-                                <div className="w-full !flex gap-x-2 min-h-[50px] justify-center prose items-center max-w-none">
-                                    <h3 className="text-slate-500 m-0">
-                                        {i}:00
-                                    </h3>
-                                    <div className="bg-slate-300 w-screen h-[1px] self-center" />
-                                </div>
-                            </div>
+                    <div className="flex flex-col gap-4 w-full">
+                        {events.map((event, i) => (
+                            <Event
+                                key={i}
+                                event={event}
+                                setEvent={event => {
+                                    setEvents([
+                                        ...events.slice(0, i),
+                                        event,
+                                        ...events.slice(i + 1)
+                                    ]);
+                                }}
+                                deleteEvent={() => {
+                                    setEvents([
+                                        ...events.slice(0, i),
+                                        ...events.slice(i + 1)
+                                    ]);
+                                }}
+                            />
                         ))}
                     </div>
-                    <div className="flex flex-col z-50 max-w-none absolute left-20 top-14">
-                        <div className="bg-sky-500 prose text-white max-w-none h-[100px] p-3 rounded-md">
-                            <p>Watch a movie</p>
-                        </div>
-                    </div>
                 </div>
+                <button
+                    className="flex flex-row w-fit gap-2 p-2 rounded-md bg-blue-100 hover:bg-blue-200 transition-all"
+                    onClick={() => {
+                        setEvents([
+                            ...events,
+                            {
+                                type: "movie",
+                                description: "The Matrix"
+                            }
+                        ]);
+                    }}>
+                    <Plus />
+                    Create
+                </button>
             </div>
         </div>
     );
