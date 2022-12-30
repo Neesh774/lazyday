@@ -1,91 +1,89 @@
-import { Reorder } from "framer-motion";
 import Event from "../components/Event";
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import {
+    VerticalTimeline,
+    VerticalTimelineElement
+} from "react-vertical-timeline-component";
+import "react-vertical-timeline-component/style.min.css";
+import Creatable, { useCreatable } from "react-select/creatable";
+import dayjs from "dayjs";
+import toast from "react-hot-toast";
 
 export default function Index() {
-    const [today, setToday] = useState({
-        day: "",
-        weekday: "",
-        current: {
-            hours: "",
-            minutes: ""
-        }
-    });
-
-    // TODO: Store in localStorage?
-    const [events, setEvents] = useState([
-        {
-            type: "movie",
-            description: "The Matrix"
-        }
-    ]);
-
-    useEffect(() => {
-        const dates = {
-            0: "Sun",
-            1: "Mon",
-            2: "Tue",
-            3: "Wed",
-            4: "Thu",
-            5: "Fri",
-            6: "Sat"
-        };
-        const date = new Date();
-        setToday({
-            weekday: dates[date.getDay()],
-            day: date.getDate(),
-            current: {
-                hours: date.getHours(),
-                minutes: date.getMinutes()
-            }
-        });
-    }, [today]);
+    const [events, setEvents] = useState([]);
+    const intervals = [];
+    const start = dayjs();
+    for (
+        let i = dayjs()
+            .set("seconds", 0)
+            .set("minute", Math.round(start.get("minutes") / 5) * 5);
+        i < dayjs().add(12, "h");
+        i = i.add(5, "minutes")
+    ) {
+        intervals.push({ value: i, label: i.format("hh:mm A").toString() });
+    }
 
     return (
-        <div className="font-body">
-            <div className="p-14 w-full flex flex-col gap-4">
-                <div className="items-center flex gap-x-4">
-                    <div className="flex flex-col w-fit items-center prose prose-xl">
-                        <h4 className="mb-0 text-blue-500">{today.weekday}</h4>
-                        <h3 className="text-blue-500">{today.day}</h3>
-                    </div>
-                    <div className="flex flex-col gap-4 w-full">
-                        {events.map((event, i) => (
-                            <Event
-                                key={i}
-                                event={event}
-                                setEvent={event => {
-                                    setEvents([
-                                        ...events.slice(0, i),
-                                        event,
-                                        ...events.slice(i + 1)
-                                    ]);
-                                }}
-                                deleteEvent={() => {
-                                    setEvents([
-                                        ...events.slice(0, i),
-                                        ...events.slice(i + 1)
-                                    ]);
-                                }}
-                            />
-                        ))}
-                    </div>
-                </div>
-                <button
-                    className="flex flex-row w-fit gap-2 p-2 rounded-md bg-blue-100 hover:bg-blue-200 transition-all"
-                    onClick={() => {
-                        setEvents([
-                            ...events,
+        <div className="bg-slate-100 min-h-screen font-body">
+            <div className="p-7">
+                <div className="flex gap-x-4 items-center">
+                    <div className="flex flex-col items-center justify-center prose prose-slate prose-xl">
+                        <h2 className="text-blue-300 mb-0">
                             {
-                                type: "movie",
-                                description: "The Matrix"
+                                [
+                                    "Sun",
+                                    "Mon",
+                                    "Tue",
+                                    "Wed",
+                                    "Thu",
+                                    "Fri",
+                                    "Sat"
+                                ][new Date().getDay()]
                             }
-                        ]);
-                    }}>
-                    <Plus />
-                    Create
-                </button>
+                        </h2>
+                        <h1 className="text-blue-500">
+                            {new Date().getDate()}
+                        </h1>
+                    </div>
+                    <Event
+                        event={events}
+                        setEvent={info =>
+                            setEvents(
+                                [...events, info].sort(
+                                    (a, b) =>
+                                        a.startTime.value > b.startTime.value
+                                )
+                            )
+                        }
+                        intervals={intervals}
+                    />
+                </div>
+                <VerticalTimeline>
+                    <style jsx>{`
+                        .vertical-timeline-element-content {
+                            box-shadow: none !important;
+                        }
+
+                        p {
+                            margin-top: 0 !important;
+                        }
+                    `}</style>
+                    {events.map((event, key) => {
+                        console.log(event);
+                        return (
+                            <VerticalTimelineElement
+                                key={key}
+                                className="vertical-timeline-element"
+                                iconStyle={{ backgroundColor: "#3b82f6" }}>
+                                <h3>
+                                    {event.startTime.label} -{" "}
+                                    {event.endTime.label}
+                                </h3>
+                                <p>{event.description}</p>
+                            </VerticalTimelineElement>
+                        );
+                    })}
+                </VerticalTimeline>
             </div>
         </div>
     );

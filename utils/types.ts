@@ -7,3 +7,10 @@ export type OptionProps = {
   icon: React.ReactNode;
   color: string;
 }
+
+export type Event = {
+  type: string;
+  description: string;
+  startTime: any;
+  endTime: any;
+}

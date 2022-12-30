@@ -1,28 +1,26 @@
 import Select, { OptionProps as SelectProps } from "react-select";
-import React from "react";
-import { Dumbbell, Film, Pizza, Trash, Tv } from "lucide-react";
-import { OptionProps } from "../utils/types";
+import React, { useState } from "react";
+import { Dumbbell, Film, Pizza, Tv } from "lucide-react";
+import { Event, OptionProps } from "../utils/types";
 import chroma from "chroma-js";
 import { data } from "browserslist";
+import dayjs from "dayjs";
+import Creatable, { useCreatable } from "react-select/creatable";
+import toast from "react-hot-toast";
 
 export default function Event({
     event,
     setEvent,
-    deleteEvent
+    intervals
 }: {
-    event: {
-        type: string;
-        description: string;
-        start_time: string;
-    };
-    setEvent: (event: {
-        type: string;
-        description: string;
-        start_time: string;
-    }) => void;
-    deleteEvent: () => void;
+    event: Event;
+    setEvent: (event: Event) => void;
+    intervals: number[];
 }) {
     const [inputFocused, setInputFocused] = React.useState(false);
+    const [startTime, setStartTime] = useState<any | null>();
+    const [endTime, setEndTime] = useState<any | null>();
+    const [description, setDescription] = useState<string>();
     const eventOptions = [
         {
             value: "movie",
@@ -55,25 +53,37 @@ export default function Event({
             .then(res => res.text())
             .then(res => console.log(res));
     };
+    const createEvent = () => {
+        if (!startTime || !endTime || !description)
+            toast.error("Make sure you fill out all the fields!");
+        else if (startTime.value > endTime.value)
+            toast.error("Make sure the start time is before the end time");
+        else if (startTime && endTime && description) {
+            setEvent({ startTime, endTime, description, type: event.type });
+            setStartTime(null);
+            setEndTime(null);
+            setDescription("");
+            toast.success("Created!");
+        }
+    };
 
     return (
-        <div className="w-full rounded-lg bg-white border border-slate-200 shadow-md px-4 py-3 flex flex-row justify-between items-center gap-4">
-            <div className="flex flex-row gap-4 flex-grow">
+        <div className="items-start w-full rounded-lg bg-white border border-slate-200 px-4 py-3 flex flex-row gap-x-2">
+            <div className="flex flex-col gap-y-2">
                 <Select
                     options={eventOptions}
                     value={eventOptions.find(
                         option => option.value === event.type
                     )}
                     onChange={(option: any, action: any) => {
-                        showSuggestions(option.value);
                         setEvent(option.value);
                     }}
                     placeholder="Event"
-                    className="w-72"
+                    className="w-60 !border-slate-200"
                     isSearchable={false}
                     getOptionLabel={(option: OptionProps) =>
                         (
-                            <div className="flex flex-row gap-4 items-center font-medium">
+                            <div className="flex flex-row gap-2 items-center font-medium">
                                 <span
                                     style={{
                                         color: option.color
@@ -103,37 +113,34 @@ export default function Event({
                                         : color.alpha(0.1).css()
                                 }
                             };
-                        },
-                        // make portal take up full width
-                        menuPortal: (styles: any) => ({
-                            ...styles,
-                            zIndex: 9999,
-                            width: "100%"
-                        }),
-                        menu: (styles: any) => ({
-                            ...styles,
-                            minWidth: "fit-content",
-                            whiteSpace: "nowrap"
-                        })
+                        }
                     }}
                 />
-                <input
-                    type="text"
-                    className="w-4/5 rounded-md border-slate-300"
-                    placeholder="Event name"
-                    disabled={!event}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
-                    value={event.description}
-                    onChange={e =>
-                        setEvent({ ...event, description: e.target.value })
-                    }
+                <Creatable
+                    value={startTime}
+                    options={intervals}
+                    onChange={option => setStartTime(option)}
+                    placeholder="Start time"
+                />
+                <Creatable
+                    value={endTime}
+                    options={intervals}
+                    onChange={option => setEndTime(option)}
+                    placeholder="End time"
                 />
             </div>
+            <input
+                type="text"
+                className="w-full border-slate-200 rounded-md"
+                onChange={event => setDescription(event.target.value)}
+                placeholder="Event name"
+                disabled={!event}
+                value={description}
+            />
             <button
-                onClick={deleteEvent}
-                className="p-1 rounded-md bg-red-300/40 hover:bg-red-300/60 text-red-500 transition-all">
-                <Trash />
+                className="bg-blue-500 px-4 py-2 rounded text-white font-bold"
+                onClick={createEvent}>
+                Create
             </button>
         </div>
     );
