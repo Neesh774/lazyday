@@ -8,83 +8,89 @@ import "react-vertical-timeline-component/style.min.css";
 import Creatable, { useCreatable } from "react-select/creatable";
 import dayjs from "dayjs";
 import toast from "react-hot-toast";
+import { eventOptions } from "../utils/types";
+import chroma from "chroma-js";
 
 export default function Index() {
     const [events, setEvents] = useState([]);
-    const intervals = [];
-    const start = dayjs();
-    for (
-        let i = dayjs()
-            .set("seconds", 0)
-            .set("minute", Math.round(start.get("minutes") / 5) * 5);
-        i < dayjs().add(12, "h");
-        i = i.add(5, "minutes")
-    ) {
-        intervals.push({ value: i, label: i.format("hh:mm A").toString() });
-    }
-
+    const [currentEvent, setCurrentEvent] = useState({
+        type: undefined,
+        description: "",
+        startTime: undefined,
+        endTime: undefined
+    });
     return (
-        <div className="bg-slate-100 min-h-screen font-body">
-            <div className="p-7">
-                <div className="flex gap-x-4 items-center">
-                    <div className="flex flex-col items-center justify-center prose prose-slate prose-xl">
-                        <h2 className="text-blue-300 mb-0">
-                            {
-                                [
-                                    "Sun",
-                                    "Mon",
-                                    "Tue",
-                                    "Wed",
-                                    "Thu",
-                                    "Fri",
-                                    "Sat"
-                                ][new Date().getDay()]
-                            }
-                        </h2>
-                        <h1 className="text-blue-500">
-                            {new Date().getDate()}
-                        </h1>
-                    </div>
-                    <Event
-                        event={events}
-                        setEvent={info =>
-                            setEvents(
-                                [...events, info].sort(
-                                    (a, b) =>
-                                        a.startTime.value > b.startTime.value
-                                )
-                            )
-                        }
-                        intervals={intervals}
-                    />
+        <div className="bg-slate-100 min-h-screen font-body p-12 pt-4 flex flex-col justify-start gap-4">
+            <h1 className="text-4xl font-extrabold">LazyDay</h1>
+            <div className="flex gap-x-4 items-center max-w-5xl">
+                <div className="flex flex-col items-center justify-center prose prose-slate prose-md bg-blue-400/20 rounded-md py-3 px-4">
+                    <h2 className="text-blue-600/60 mb-0">
+                        {dayjs().format("ddd")}
+                    </h2>
+                    <h1 className="text-blue-500">{dayjs().format("D")}</h1>
                 </div>
-                <VerticalTimeline>
-                    <style jsx>{`
-                        .vertical-timeline-element-content {
-                            box-shadow: none !important;
-                        }
-
-                        p {
-                            margin-top: 0 !important;
-                        }
-                    `}</style>
-                    {events.map((event, key) => {
-                        console.log(event);
-                        return (
-                            <VerticalTimelineElement
-                                key={key}
-                                className="vertical-timeline-element"
-                                iconStyle={{ backgroundColor: "#3b82f6" }}>
-                                <h3>
-                                    {event.startTime.label} -{" "}
-                                    {event.endTime.label}
-                                </h3>
-                                <p>{event.description}</p>
-                            </VerticalTimelineElement>
-                        );
-                    })}
-                </VerticalTimeline>
+                <Event
+                    event={currentEvent}
+                    setEvent={info =>
+                        setCurrentEvent({ ...currentEvent, ...info })
+                    }
+                    addEvent={() => {
+                        setEvents([...events, currentEvent]);
+                        setCurrentEvent({
+                            startTime: undefined,
+                            endTime: undefined,
+                            description: "",
+                            type: undefined
+                        });
+                    }}
+                />
             </div>
+            <VerticalTimeline
+                className="shadow-none w-fit !m-0"
+                layout="1-column-left">
+                {events.map((event, key) => {
+                    if (event.startTime === undefined) return null;
+                    const option = eventOptions.find(
+                        option => option.value === event.type
+                    );
+                    return (
+                        <VerticalTimelineElement
+                            icon={option.icon}
+                            key={key}
+                            contentStyle={{
+                                boxShadow: "none"
+                            }}
+                            iconStyle={{
+                                backgroundColor: chroma(option.color).brighten(
+                                    2
+                                ),
+                                color: option.color
+                            }}>
+                            <div className="flex flex-col gap-2">
+                                <h3>
+                                    <span className="text-lg font-bold text-zinc-500">
+                                        {dayjs(event.startTime, "HH:mm").format(
+                                            "h:mm A "
+                                        )}
+                                    </span>
+                                    &mdash;
+                                    <span className="text-lg font-bold text-zinc-500">
+                                        {dayjs(event.endTime, "HH:mm").format(
+                                            " h:mm A"
+                                        )}
+                                    </span>
+                                </h3>
+                                <h1 className="text-xl font-bold">
+                                    {option.label}
+                                </h1>
+                                <h3 className="!text-lg !font-semibold text-zinc-700">
+                                    {event.description}
+                                </h3>
+                            </div>
+                        </VerticalTimelineElement>
+                    );
+                })}
+            </VerticalTimeline>
         </div>
     );
 }
