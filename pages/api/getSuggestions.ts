@@ -11,7 +11,6 @@ const handler: NextApiHandler = async (req, res) => {
   switch (type) {
     case "movie":
       const titles = await getTitles(type);
-      console.log(titles)
       res.status(200).json(titles);
   }
 };
